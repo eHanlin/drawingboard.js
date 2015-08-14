@@ -369,7 +369,9 @@ DrawingBoard.Board.defaultOpts = {
 	droppable: false,
 	enlargeYourContainer: false,
 	errorMessage: "<p>It seems you use an obsolete browser. <a href=\"http://browsehappy.com/\" target=\"_blank\">Update it</a> to start drawing.</p>",
-	stretchImg: false //when setting the canvas img, strech the image at the whole canvas size when this opt is true
+	stretchImg: false, //when setting the canvas img, strech the image at the whole canvas size when this opt is true
+	autoHistory:true,
+	autoStorage:true
 };
 
 
@@ -913,8 +915,8 @@ DrawingBoard.Board.prototype = {
 		if (this.isDrawing && (!e.touches || e.touches.length === 0)) {
 			this.isDrawing = false;
 
-			this.saveWebStorage();
-			this.saveHistory();
+			if ( this.opts.autoStorage ) this.saveWebStorage();
+			if ( this.opts.autoHistory ) this.saveHistory();
 
 			this.ev.trigger('board:stopDrawing', {e: e, coords: coords});
 			this.ev.trigger('board:userAction');
