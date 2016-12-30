@@ -167,7 +167,9 @@ DrawingBoard.Board.prototype = {
 		this.setMode(prevMode);
 	},
 
-	resize: function() {
+	resize: function(resizeOpts) {
+		var resizeOpts = resizeOpts || {controlHeight:true};
+		
 		this.dom.$controls.toggleClass('drawing-board-controls-hidden', (!this.controls || !this.controls.length));
 
 		var canvasWidth, canvasHeight;
@@ -179,10 +181,10 @@ DrawingBoard.Board.prototype = {
 		var heights = [
 			this.$el.height(),
 			DrawingBoard.Utils.boxBorderHeight(this.$el),
-			this.dom.$controls.height(),
 			DrawingBoard.Utils.boxBorderHeight(this.dom.$controls, false, true),
 			DrawingBoard.Utils.boxBorderHeight(this.dom.$canvasWrapper, true, true)
 		];
+		if (resizeOpts.controlHeight) heights.push(this.dom.$controls.height());
 		var that = this;
 		var sum = function(values, multiplier) { //make the sum of all array values
 			multiplier = multiplier || 1;
