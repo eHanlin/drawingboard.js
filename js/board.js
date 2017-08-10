@@ -393,8 +393,10 @@ DrawingBoard.Board.prototype = {
 			return false;
 
 		this.dom.$canvas.on('dragover dragenter drop', function(e) {
-			e.stopPropagation();
-			e.preventDefault();
+			if(!this.isMovingScreen) {
+				e.stopPropagation();
+				e.preventDefault();
+			}
 		});
 
 		this.dom.$canvas.on('drop', $.proxy(this._onCanvasDrop, this));
@@ -540,6 +542,23 @@ DrawingBoard.Board.prototype = {
 		this.ctx.putImageData(img, 0, 0);
 	},
 
+	isMoveGesture:function (e) {
+		if (e.originalEvent && e.originalEvent.touches && e.originalEvent.touches.length >= 2) {
+			return true;
+		}
+		return false;
+	},
+
+	
+	_onInputStartMoving: function(e) {
+		this.isDrawing = false;
+		this.isMovingScreen = true;
+	},
+	
+	_onInputStopMoving: function(e) {
+		this.isMovingScreen = false;
+	},
+
 
 	/**
 	 * Drawing handling, with mouse or touch
@@ -552,11 +571,15 @@ DrawingBoard.Board.prototype = {
 		this.coords.old = this.coords.current = this.coords.oldMid = { x: 0, y: 0 };
 
 		this.dom.$canvas.on('mousedown touchstart', $.proxy(function(e) {
-			this._onInputStart(e, this._getInputCoords(e) );
+			if (this.opts.useMovingGesture && !this.isMoveGesture(e)) {
+				this._onInputStart(e, this._getInputCoords(e) );
+			} else {
+				this._onInputStartMoving(e, this._getInputCoords(e));
+			}
 		}, this));
 
 		this.dom.$canvas.on('mousemove touchmove', $.proxy(function(e) {
-			this._onInputMove(e, this._getInputCoords(e) );
+			if (!this.isMovingScreen) this._onInputMove(e, this._getInputCoords(e) );
 		}, this));
 
 		this.dom.$canvas.on('mousemove', $.proxy(function(e) {
@@ -564,7 +587,11 @@ DrawingBoard.Board.prototype = {
 		}, this));
 
 		this.dom.$canvas.on('mouseup touchend', $.proxy(function(e) {
-			this._onInputStop(e, this._getInputCoords(e) );
+			if (this.isMovingScreen) {
+				this._onInputStop(e, this._getInputCoords(e) );
+			} else {
+				this._onInputStop(e, this._getInputCoords(e) );
+			}
 		}, this));
 
 		this.dom.$canvas.on('mouseover', $.proxy(function(e) {
@@ -619,7 +646,7 @@ DrawingBoard.Board.prototype = {
 
 		this.ev.trigger('board:startDrawing', {e: e, coords: coords});
 		e.stopPropagation();
-		e.preventDefault();
+		//e.preventDefault();
 	},
 
 	_onInputMove: function(e, coords) {
