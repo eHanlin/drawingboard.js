@@ -571,7 +571,7 @@ DrawingBoard.Board.prototype = {
 		this.coords.old = this.coords.current = this.coords.oldMid = { x: 0, y: 0 };
 
 		this.dom.$canvas.on('mousedown touchstart', $.proxy(function(e) {
-			if (this.opts.useMovingGesture && !this.isMoveGesture(e)) {
+			if (!this.opts.useMovingGesture || !this.isMoveGesture(e)) {
 				this._onInputStart(e, this._getInputCoords(e) );
 			} else {
 				this._onInputStartMoving(e, this._getInputCoords(e));
