@@ -167,6 +167,10 @@ DrawingBoard.Board.prototype = {
 		this.setMode(prevMode);
 	},
 
+	clear: function() {
+		this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+	},
+
 	resize: function(resizeOpts) {
 		var resizeOpts = resizeOpts || {controlHeight:true};
 		
