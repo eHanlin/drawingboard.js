@@ -1,6 +1,6 @@
 {
 	"name": "drawingboard.js",
-	"version": "0.4.9",
+	"version": "0.4.10",
 	"main":"dist/drawingboard.js",
 	"devDependencies": {
 		"grunt": "~0.4.1",

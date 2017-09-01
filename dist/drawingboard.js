@@ -1,4 +1,4 @@
-/* drawingboard.js v0.4.8 - https://github.com/Leimi/drawingboard.js
+/* drawingboard.js v0.4.10 - https://github.com/Leimi/drawingboard.js
 * Copyright (c) 2017 Emmanuel Pelletier
 * Licensed MIT */
 (function() {
@@ -181,7 +181,8 @@ DrawingBoard.Utils.MicroEvent.prototype = {
 	unbind : function(event, fct){
 		this._events = this._events || {};
 		if( event in this._events === false  )	return;
-		this._events[event].splice(this._events[event].indexOf(fct), 1);
+		var index = this._events[event].indexOf(fct);
+		if (index != -1) this._events[event].splice(index, 1);
 	},
 	trigger : function(event /* , args... */){
 		this._events = this._events || {};
