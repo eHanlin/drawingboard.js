@@ -691,6 +691,18 @@ DrawingBoard.Board.prototype = {
 		this.ev.trigger('board:mouseOut', {e: e, coords: coords});
 	},
 
+	_getCoordX: function(e) {
+		return e.pageX;
+	},   
+	       
+	_getCoordY: function(e) {
+		return e.pageY;
+	}, 
+
+	_getViewPointScale: function() {
+		return document.documentElement.clientWidth / window.innerWidth;
+	},
+
 	_getInputCoords: function(e) {
 		e = e.originalEvent ? e.originalEvent : e;
 		var
@@ -699,15 +711,30 @@ DrawingBoard.Board.prototype = {
 			height = this.dom.$canvas.height()
 		;
 		var x, y;
-		if (e.touches && e.touches.length == 1) {
-			x = e.touches[0].pageX;
-			y = e.touches[0].pageY;
+
+		if (e.touches && e.touches.length == 1) { 
+		  x = this._getCoordX(e.touches[0]);
+		  y = this._getCoordY(e.touches[0]);
 		} else {
-			x = e.pageX;
-			y = e.pageY;
+		  x = this._getCoordX(e);
+		  y = this._getCoordY(e);
 		}
-		x = x - this.dom.$canvas.offset().left;
-		y = y - this.dom.$canvas.offset().top;
+		//see https://github.com/jquery/jquery/issues/3187
+		//get document element width without scrollbar
+		//var prevStyle = document.body.style.overflow || "";
+		//document.body.style.overflow = "hidden";
+		//var docWidth = document.documentElement.clientWidth;
+		//document.body.style.overflow = prevStyle;
+		
+		if (this._getViewPointScale() !== 1) { 
+		  var docRect = document.documentElement.getBoundingClientRect();
+		  x = x - this.dom.$canvas.offset().left +  window.pageXOffset + docRect.left;
+		  y = y - this.dom.$canvas.offset().top +  window.pageYOffset + docRect.top;
+		} else {
+		  x = x - this.dom.$canvas.offset().left;
+		  y = y - this.dom.$canvas.offset().top;
+		}
+
 		x *= (width / rect.width);
 		y *= (height / rect.height);
 		return {
