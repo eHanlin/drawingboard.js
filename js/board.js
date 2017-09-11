@@ -607,7 +607,7 @@ DrawingBoard.Board.prototype = {
 
 		}, this));
 
-		$('body').on('mouseup touchend', $.proxy(function(e) {
+		$(document).on('mouseup touchend', $.proxy(function(e) {
 			this.isDrawing = false;
 		}, this));
 
