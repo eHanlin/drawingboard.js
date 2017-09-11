@@ -1,4 +1,4 @@
-/* drawingboard.js v0.4.11 - https://github.com/Leimi/drawingboard.js
+/* drawingboard.js v0.4.12 - https://github.com/Leimi/drawingboard.js
 * Copyright (c) 2017 Emmanuel Pelletier
 * Licensed MIT */
 (function() {
@@ -891,7 +891,7 @@ DrawingBoard.Board.prototype = {
 
 		}, this));
 
-		$('body').on('mouseup touchend', $.proxy(function(e) {
+		$(document).on('mouseup touchend', $.proxy(function(e) {
 			this.isDrawing = false;
 		}, this));
 
