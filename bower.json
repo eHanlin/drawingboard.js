@@ -1,6 +1,6 @@
 {
 	"name": "drawingboard.js",
-	"version": "0.4.13",
+	"version": "0.4.14",
 	"main": ["dist/drawingboard.js", "dist/drawingboard.css"],
 	"dependencies": {
 		"jquery": "*",
