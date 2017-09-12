@@ -611,7 +611,17 @@ DrawingBoard.Board.prototype = {
 			this.isDrawing = false;
 		}, this));
 
-		if (window.requestAnimationFrame) requestAnimationFrame( $.proxy(this.draw, this) );
+		this.startDrawing();
+	},
+
+	stopDrawing:function () {
+		this.enabledDrawing = false;
+		if (window.cancelAnimationFrame) cancelAnimationFrame(this._requestAnimationFrameId);
+	},
+
+	startDrawing:function () {
+		this.enabledDrawing = true;
+		if (window.requestAnimationFrame) this._requestAnimationFrameId = requestAnimationFrame( $.proxy(this.draw, this) );
 	},
 
 	draw: function() {
@@ -638,7 +648,7 @@ DrawingBoard.Board.prototype = {
 			this.coords.oldMid = currentMid;
 		}
 
-		if (window.requestAnimationFrame) requestAnimationFrame( $.proxy(function() { this.draw(); }, this) );
+		if (this.enabledDrawing && window.requestAnimationFrame) this._requestAnimationFrameId = requestAnimationFrame( $.proxy(function() { this.draw(); }, this) );
 	},
 
 	_onInputStart: function(e, coords) {
