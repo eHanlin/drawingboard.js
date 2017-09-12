@@ -1,4 +1,4 @@
-/* drawingboard.js v0.4.12 - https://github.com/Leimi/drawingboard.js
+/* drawingboard.js v0.4.13 - https://github.com/Leimi/drawingboard.js
 * Copyright (c) 2017 Emmanuel Pelletier
 * Licensed MIT */
 (function() {
@@ -895,7 +895,17 @@ DrawingBoard.Board.prototype = {
 			this.isDrawing = false;
 		}, this));
 
-		if (window.requestAnimationFrame) requestAnimationFrame( $.proxy(this.draw, this) );
+		this.startDrawing();
+	},
+
+	stopDrawing:function () {
+		this.enabledDrawing = false;
+		if (window.cancelAnimationFrame) cancelAnimationFrame(this._requestAnimationFrameId);
+	},
+
+	startDrawing:function () {
+		this.enabledDrawing = true;
+		if (window.requestAnimationFrame) this._requestAnimationFrameId = requestAnimationFrame( $.proxy(this.draw, this) );
 	},
 
 	draw: function() {
@@ -922,7 +932,7 @@ DrawingBoard.Board.prototype = {
 			this.coords.oldMid = currentMid;
 		}
 
-		if (window.requestAnimationFrame) requestAnimationFrame( $.proxy(function() { this.draw(); }, this) );
+		if (this.enabledDrawing && window.requestAnimationFrame) this._requestAnimationFrameId = requestAnimationFrame( $.proxy(function() { this.draw(); }, this) );
 	},
 
 	_onInputStart: function(e, coords) {
