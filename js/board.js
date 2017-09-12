@@ -617,11 +617,12 @@ DrawingBoard.Board.prototype = {
 	stopDrawing:function () {
 		this.enabledDrawing = false;
 		if (window.cancelAnimationFrame) cancelAnimationFrame(this._requestAnimationFrameId);
+		this._requestAnimationFrameId = null;
 	},
 
 	startDrawing:function () {
 		this.enabledDrawing = true;
-		if (window.requestAnimationFrame) this._requestAnimationFrameId = requestAnimationFrame( $.proxy(this.draw, this) );
+		if (this._requestAnimationFrameId == null && window.requestAnimationFrame) this._requestAnimationFrameId = requestAnimationFrame( $.proxy(this.draw, this) );
 	},
 
 	draw: function() {
