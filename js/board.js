@@ -571,6 +571,7 @@ DrawingBoard.Board.prototype = {
 	initDrawEvents: function() {
 		this.isDrawing = false;
 		this.isMouseHovering = false;
+		this._isDrawingOnEvent = this.opts && this.opts.isDrawingOnEvent;
 		this.coords = {};
 		this.coords.old = this.coords.current = this.coords.oldMid = { x: 0, y: 0 };
 
@@ -625,11 +626,18 @@ DrawingBoard.Board.prototype = {
 		if (this._requestAnimationFrameId == null && window.requestAnimationFrame) this._requestAnimationFrameId = requestAnimationFrame( $.proxy(this.draw, this) );
 	},
 
+	_isUsingLoopToRender: function() {
+		if (!this._isDrawingOnEvent && window.requestAnimationFrame) {
+			return true;
+		}
+		return false;
+	},
+
 	draw: function() {
 		//if the pencil size is big (>10), the small crosshair makes a friend: a circle of the size of the pencil
 		//todo: have the circle works on every browser - it currently should be added only when CSS pointer-events are supported
 		//we assume that if requestAnimationFrame is supported, pointer-events is too, but this is terribad.
-		if (window.requestAnimationFrame && this.ctx.lineWidth > 10 && this.isMouseHovering) {
+		if (!this._isUsingLoopToRender() && this.ctx.lineWidth > 10 && this.isMouseHovering) {
 			this.dom.$cursor.css({ width: this.ctx.lineWidth + 'px', height: this.ctx.lineWidth + 'px' });
 			var transform = DrawingBoard.Utils.tpl("translateX({{x}}px) translateY({{y}}px)", { x: this.coords.current.x-(this.ctx.lineWidth/2), y: this.coords.current.y-(this.ctx.lineWidth/2) });
 			this.dom.$cursor.css({ 'transform': transform, '-webkit-transform': transform, '-ms-transform': transform });
@@ -649,7 +657,7 @@ DrawingBoard.Board.prototype = {
 			this.coords.oldMid = currentMid;
 		}
 
-		if (this.enabledDrawing && window.requestAnimationFrame) this._requestAnimationFrameId = requestAnimationFrame( $.proxy(function() { this.draw(); }, this) );
+		if (this.enabledDrawing && this._isUsingLoopToRender()) this._requestAnimationFrameId = requestAnimationFrame( $.proxy(function() { this.draw(); }, this) );
 	},
 
 	_onInputStart: function(e, coords) {
@@ -657,7 +665,7 @@ DrawingBoard.Board.prototype = {
 		this.coords.oldMid = this._getMidInputCoords(coords);
 		this.isDrawing = true;
 
-		if (!window.requestAnimationFrame) this.draw();
+		if (!this._isUsingLoopToRender()) this.draw();
 
 		this.ev.trigger('board:startDrawing', {e: e, coords: coords});
 		e.stopPropagation();
@@ -668,7 +676,7 @@ DrawingBoard.Board.prototype = {
 		this.coords.current = coords;
 		this.ev.trigger('board:drawing', {e: e, coords: coords});
 
-		if (!window.requestAnimationFrame) this.draw();
+		if (!this._isUsingLoopToRender()) this.draw();
 
 		e.stopPropagation();
 		e.preventDefault();
