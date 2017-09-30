@@ -674,7 +674,7 @@ DrawingBoard.Board.prototype = {
 
 	_onInputMove: function(e, coords) {
 		this.coords.current = coords;
-		this.ev.trigger('board:drawing', {e: e, coords: coords});
+		if (this.isDrawing) this.ev.trigger('board:drawing', {e: e, coords: coords});
 
 		if (!this._isUsingLoopToRender()) this.draw();
 
