@@ -1,4 +1,4 @@
-/* drawingboard.js v0.4.15 - https://github.com/Leimi/drawingboard.js
+/* drawingboard.js v0.4.16 - https://github.com/Leimi/drawingboard.js
 * Copyright (c) 2017 Emmanuel Pelletier
 * Licensed MIT */
 (function() {
@@ -958,7 +958,7 @@ DrawingBoard.Board.prototype = {
 
 	_onInputMove: function(e, coords) {
 		this.coords.current = coords;
-		this.ev.trigger('board:drawing', {e: e, coords: coords});
+		if (this.isDrawing) this.ev.trigger('board:drawing', {e: e, coords: coords});
 
 		if (!this._isUsingLoopToRender()) this.draw();
 
