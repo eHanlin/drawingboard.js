@@ -1,9 +1,9 @@
 {
 	"name": "drawingboard.js",
-	"version": "0.4.17",
+	"version": "0.4.18",
 	"main": ["dist/drawingboard.js", "dist/drawingboard.css"],
 	"dependencies": {
 		"jquery": "*",
-		"simple-undo": "*"
+		"simple-undo": "git@github.com:eHanlin/simple-undo.git"
 	}
 }

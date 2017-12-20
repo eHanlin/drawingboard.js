@@ -1,22 +1,22 @@
-/* drawingboard.js v0.4.17 - https://github.com/Leimi/drawingboard.js
+/* drawingboard.js v0.4.18 - https://github.com/Leimi/drawingboard.js
 * Copyright (c) 2017 Emmanuel Pelletier
 * Licensed MIT */
 (function() {
-	
+
 'use strict';
 
 /**
  * SimpleUndo is a very basic javascript undo/redo stack for managing histories of basically anything.
- * 
+ *
  * options are: {
  * 	* `provider` : required. a function to call on `save`, which should provide the current state of the historized object through the given "done" callback
  * 	* `maxLength` : the maximum number of items in history
- * 	* `opUpdate` : a function to call to notify of changes in history. Will be called on `save`, `undo`, `redo` and `clear`
+ * 	* `onUpdate` : a function to call to notify of changes in history. Will be called on `save`, `undo`, `redo` and `clear`
  * }
- * 
+ *
  */
 var SimpleUndo = function(options) {
-	
+
 	var settings = options ? options : {};
 	var defaultOptions = {
 		provider: function() {
@@ -25,11 +25,11 @@ var SimpleUndo = function(options) {
 		maxLength: 30,
 		onUpdate: function() {}
 	};
-	
+
 	this.provider = (typeof settings.provider != 'undefined') ? settings.provider : defaultOptions.provider;
 	this.maxLength = (typeof settings.maxLength != 'undefined') ? settings.maxLength : defaultOptions.maxLength;
 	this.onUpdate = (typeof settings.onUpdate != 'undefined') ? settings.onUpdate : defaultOptions.onUpdate;
-	
+
 	this.initialItem = null;
 	this.clear();
 };
@@ -54,9 +54,9 @@ SimpleUndo.prototype.clear = function() {
 
 SimpleUndo.prototype.save = function() {
 	this.provider(function(current) {
-		truncate(this.stack, this.maxLength);
+		if (this.position >= this.maxLength) truncate(this.stack, this.maxLength);
 		this.position = Math.min(this.position,this.stack.length - 1);
-		
+
 		this.stack = this.stack.slice(0, this.position + 1);
 		this.stack.push(current);
 		this.position++;
@@ -68,7 +68,7 @@ SimpleUndo.prototype.undo = function(callback) {
 	if (this.canUndo()) {
 		var item =  this.stack[--this.position];
 		this.onUpdate();
-		
+
 		if (callback) {
 			callback(item);
 		}
@@ -79,7 +79,7 @@ SimpleUndo.prototype.redo = function(callback) {
 	if (this.canRedo()) {
 		var item = this.stack[++this.position];
 		this.onUpdate();
-		
+
 		if (callback) {
 			callback(item);
 		}
@@ -114,6 +114,7 @@ if (typeof window != 'undefined') {
 }
 
 })();
+
 window.DrawingBoard = typeof DrawingBoard !== "undefined" ? DrawingBoard : {};
 
 
