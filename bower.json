@@ -4,6 +4,6 @@
 	"main": ["dist/drawingboard.js", "dist/drawingboard.css"],
 	"dependencies": {
 		"jquery": "*",
-		"simple-undo": "git@github.com:eHanlin/simple-undo.git"
+		"simple-undo": "1.0.2"
 	}
 }
