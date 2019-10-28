@@ -569,6 +569,7 @@ DrawingBoard.Board.prototype = {
 	 */
 
 	initDrawEvents: function() {
+		this._pointCount = 0;
 		this.isDrawing = false;
 		this.isMouseHovering = false;
 		this._isDrawingOnEvent = this.opts && this.opts.isDrawingOnEvent;
@@ -649,7 +650,7 @@ DrawingBoard.Board.prototype = {
 
 		//if (this.isDrawing ) {
 
-			if (this.isDrawing) {
+			if (this.isDrawing && !this.coords.current.isInQueue) {
 				this.coordArray.push(this.coords.current);
 			}
 
@@ -696,6 +697,7 @@ DrawingBoard.Board.prototype = {
 	},
 
 	_onInputStart: function(e, coords) {
+		this._pointCount = 0;
 		this.coords.current = this.coords.old = coords;
 		this.coords.oldMid = this._getMidInputCoords(coords);
 		this.isDrawing = true;
@@ -712,13 +714,18 @@ DrawingBoard.Board.prototype = {
 
 	_onInputMove: function(e, coords) {
 		this.coords.current = coords;
-		//this.coordArray.push(coords)
+		if (this._pointCount % 3 == 0) {
+			coords.isInQueue = true;
+			this.coordArray.push(coords)
+		}
+
 		if (this.isDrawing) this.ev.trigger('board:drawing', {e: e, coords: coords});
 
 		if (!this._isUsingLoopToRender()) this.draw();
 
 		e.stopPropagation();
 		e.preventDefault();
+		this._pointCount++;
 	},
 
 	_onInputStop: function(e, coords) {
