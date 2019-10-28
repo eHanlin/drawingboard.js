@@ -1,5 +1,5 @@
 /* drawingboard.js v0.4.18 - https://github.com/Leimi/drawingboard.js
-* Copyright (c) 2017 Emmanuel Pelletier
+* Copyright (c) 2019 Emmanuel Pelletier
 * Licensed MIT */
 (function() {
 
@@ -859,6 +859,7 @@ DrawingBoard.Board.prototype = {
 		this._isDrawingOnEvent = this.opts && this.opts.isDrawingOnEvent;
 		this.coords = {};
 		this.coords.old = this.coords.current = this.coords.oldMid = { x: 0, y: 0 };
+		this.coordArray = [];
 
 		this.dom.$canvas.on('mousedown touchstart', $.proxy(function(e) {
 			if (!this.opts.useMovingGesture || !this.isMoveGesture(e)) {
@@ -931,16 +932,50 @@ DrawingBoard.Board.prototype = {
 			this.dom.$cursor.addClass('drawing-board-utils-hidden');
 		}
 
-		if (this.isDrawing) {
-			var currentMid = this._getMidInputCoords(this.coords.current);
-			this.ctx.beginPath();
-			this.ctx.moveTo(currentMid.x, currentMid.y);
-			this.ctx.quadraticCurveTo(this.coords.old.x, this.coords.old.y, this.coords.oldMid.x, this.coords.oldMid.y);
-			this.ctx.stroke();
+		//if (this.isDrawing ) {
 
-			this.coords.old = this.coords.current;
-			this.coords.oldMid = currentMid;
-		}
+			if (this.isDrawing) {
+				this.coordArray.push(this.coords.current);
+			}
+
+			while(this.coordArray.length){
+				var currentCoord = this.coordArray.shift();
+
+				if (currentCoord.start) {
+					this.coordArray.old = currentCoord;
+					this.coordArray.oldMid = currentCoord;
+				}
+				//console.log(currentCoord, this.coordArray);
+				
+				var oldCoord = this.coordArray.old;
+
+				if (oldCoord) {
+					var oldMid = this.coordArray.oldMid;
+					var currentMid = this._getMidCoords(oldCoord, currentCoord);
+					this.ctx.beginPath();
+					this.ctx.moveTo(currentMid.x, currentMid.y);
+					this.ctx.quadraticCurveTo(oldCoord.x, oldCoord.y, oldMid.x, oldMid.y);
+					this.ctx.stroke();
+
+					this.coordArray.old = currentCoord;
+					this.coordArray.oldMid = currentMid;
+				}
+
+				if (currentCoord.end) {
+					this.coordArray.old = null;
+					this.coordArray.oldMid = null;
+				}
+
+				//var currentMid = this._getMidInputCoords(this.coords.current);
+				//this.ctx.beginPath();
+				//this.ctx.moveTo(currentMid.x, currentMid.y);
+				//this.ctx.quadraticCurveTo(this.coords.old.x, this.coords.old.y, this.coords.oldMid.x, this.coords.oldMid.y);
+				//this.ctx.stroke();
+
+				//this.coords.old = this.coords.current;
+				//this.coords.oldMid = currentMid;
+			}
+		//}
 
 		if (this.enabledDrawing && this._isUsingLoopToRender()) this._requestAnimationFrameId = requestAnimationFrame( $.proxy(function() { this.draw(); }, this) );
 	},
@@ -949,6 +984,9 @@ DrawingBoard.Board.prototype = {
 		this.coords.current = this.coords.old = coords;
 		this.coords.oldMid = this._getMidInputCoords(coords);
 		this.isDrawing = true;
+
+		coords.start = true;
+		this.coordArray.push(coords)
 
 		if (!this._isUsingLoopToRender()) this.draw();
 
@@ -959,6 +997,7 @@ DrawingBoard.Board.prototype = {
 
 	_onInputMove: function(e, coords) {
 		this.coords.current = coords;
+		//this.coordArray.push(coords)
 		if (this.isDrawing) this.ev.trigger('board:drawing', {e: e, coords: coords});
 
 		if (!this._isUsingLoopToRender()) this.draw();
@@ -970,6 +1009,10 @@ DrawingBoard.Board.prototype = {
 	_onInputStop: function(e, coords) {
 		if (this.isDrawing && (!e.touches || e.touches.length === 0)) {
 			this.isDrawing = false;
+			coords.end = true;
+			this.coordArray.push(coords)
+
+			if (!this._isUsingLoopToRender()) this.draw();
 
 			if ( this.opts.autoStorage ) this.saveWebStorage();
 			if ( this.opts.autoHistory ) this.saveHistory();
@@ -985,6 +1028,7 @@ DrawingBoard.Board.prototype = {
 		this.isMouseHovering = true;
 		this.coords.old = this._getInputCoords(e);
 		this.coords.oldMid = this._getMidInputCoords(this.coords.old);
+		//this.coordArray.push(coords)
 
 		this.ev.trigger('board:mouseOver', {e: e, coords: coords});
 	},
@@ -1016,13 +1060,22 @@ DrawingBoard.Board.prototype = {
 		;
 		var x, y;
 
-		if (e.touches && e.touches.length == 1) { 
+		/*if (e.touches && e.touches.length == 1) { 
 		  x = this._getCoordX(e.touches[0]);
 		  y = this._getCoordY(e.touches[0]);
 		} else {
 		  x = this._getCoordX(e);
 		  y = this._getCoordY(e);
+		}*/
+
+		if (e.changedTouches && e.changedTouches.length == 1) { 
+		  x = this._getCoordX(e.changedTouches[0]);
+		  y = this._getCoordY(e.changedTouches[0]);
+		} else {
+		  x = this._getCoordX(e);
+		  y = this._getCoordY(e);
 		}
+
 		//see https://github.com/jquery/jquery/issues/3187
 		//get document element width without scrollbar
 		//var prevStyle = document.body.style.overflow || "";
@@ -1044,6 +1097,13 @@ DrawingBoard.Board.prototype = {
 		return {
 			x: x,
 			y: y
+		};
+	},
+
+	_getMidCoords: function(oldCoords, coords) {
+		return {
+			x: oldCoords.x + coords.x>>1,
+			y: oldCoords.y + coords.y>>1
 		};
 	},
 
