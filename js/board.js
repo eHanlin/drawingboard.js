@@ -576,12 +576,23 @@ DrawingBoard.Board.prototype = {
 		this.coords = {};
 		this.coords.old = this.coords.current = this.coords.oldMid = { x: 0, y: 0 };
 		this.coordArray = [];
+		this.isPen = false;
+
+		this.dom.$canvas.on('pointerover', $.proxy(function(e) {
+			if(e.originalEvent.pointerType == 'pen') {
+				this.isPen = true;
+			}
+		}, this));
+
+		this.dom.$canvas.on('pointerout', $.proxy(function(e) {
+			this.isPen = false;
+		}, this));
 
 		this.dom.$canvas.on('mousedown touchstart', $.proxy(function(e) {
-			if (!this.opts.useMovingGesture || !this.isMoveGesture(e)) {
-				this._onInputStart(e, this._getInputCoords(e) );
-			} else {
+			if (this.opts.useMovingGesture && this.isMoveGesture(e)) {
 				this._onInputStartMoving(e, this._getInputCoords(e));
+			} else {
+				this._onInputStart(e, this._getInputCoords(e) );
 			}
 		}, this));
 
@@ -650,7 +661,7 @@ DrawingBoard.Board.prototype = {
 
 		//if (this.isDrawing ) {
 
-			if (this.isDrawing && !this.coords.current.isInQueue) {
+			if (!this.isMovingScreen && this.isDrawing && !this.coords.current.isInQueue) {
 				this.coordArray.push(this.coords.current);
 			}
 
@@ -709,11 +720,12 @@ DrawingBoard.Board.prototype = {
 
 		this.ev.trigger('board:startDrawing', {e: e, coords: coords});
 		e.stopPropagation();
-		//e.preventDefault();
+		if (this.isPen) e.preventDefault();
 	},
 
 	_onInputMove: function(e, coords) {
 		this.coords.current = coords;
+		//console.log(this._pointCount);
 		if (this._pointCount % 3 == 0) {
 			coords.isInQueue = true;
 			this.coordArray.push(coords)
@@ -729,7 +741,7 @@ DrawingBoard.Board.prototype = {
 	},
 
 	_onInputStop: function(e, coords) {
-		if (this.isDrawing && (!e.touches || e.touches.length === 0)) {
+		if (!this.isMovingScreen && this.isDrawing && (!e.touches || e.touches.length === 0)) {
 			this.isDrawing = false;
 			coords.end = true;
 			this.coordArray.push(coords)
